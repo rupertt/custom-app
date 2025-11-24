@@ -6,6 +6,7 @@ import static spark.Spark.port;
 import com.google.gson.Gson;
 import com.launchdarkly.sdk.LDContext;
 import com.launchdarkly.sdk.server.LDClient;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,7 +23,7 @@ public class App {
 		port(8080);
 
 		// Initialize LaunchDarkly client if SDK key is provided via environment
-		String sdkKey = System.getenv("LD_SDK_KEY");
+		String sdkKey = "sdk-e645e583-c7a3-4006-97fb-b4160bc1961f";
 		if (sdkKey == null || sdkKey.isEmpty()) {
 			sdkKey = System.getenv("LAUNCHDARKLY_SDK_KEY");
 		}
@@ -43,7 +44,11 @@ public class App {
 			}
 			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 				if (ldClient != null) {
-					ldClient.close();
+					try {
+						ldClient.close();
+					} catch (IOException e) {
+						System.err.println("Error closing LaunchDarkly client: " + e.getMessage());
+					}
 				}
 			}));
 		} else {
@@ -62,14 +67,12 @@ public class App {
 				}
 				String contextName = req.queryParams("name");
 
-				LDContext.Builder builder = LDContext.builder(contextKey);
+				LDContext context;
 				if (contextName != null && !contextName.isEmpty()) {
-					builder.name(contextName);
+					context = LDContext.builder(contextKey).name(contextName).build();
 				} else {
-					builder.name("Sandy");
+					context = LDContext.builder(contextKey).name("Sandy").build();
 				}
-				LDContext context = builder
-					.build();
 
 				// Evaluate the feature flag for this context.
 				boolean flagValue = ldClient.boolVariation(FLAG_KEY, context, false);
