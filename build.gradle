@@ -16,6 +16,7 @@ repositories {
 dependencies {
 	implementation 'com.sparkjava:spark-core:2.9.4'
 	implementation 'com.google.code.gson:gson:2.11.0'
+    implementation group: 'com.launchdarkly', name: 'launchdarkly-java-server-sdk', version: '7.0.0'
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.11.0'
 }
 

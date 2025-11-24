@@ -1,6 +1,6 @@
-## Sample Java 17 SparkJava App
+## Sample Java App
 
-Minimal HTTP service using SparkJava on port 8080. It exposes:
+Example App To Test Launchdarkly Features
 - GET `/` simple page that polls `/message` and a “Track Event” button
 - GET `/message` returns a JSON message
 
@@ -12,13 +12,17 @@ Minimal HTTP service using SparkJava on port 8080. It exposes:
 2) Build:
 ```bash
 ./gradlew build
-# Windows PowerShell: .\gradlew.bat build
+```
+```powershell
+ .\gradlew.bat build
 ```
 
 3) Run:
 ```bash
 ./gradlew run
-# Windows PowerShell: .\gradlew.bat run
+```
+```powershell
+ .\gradlew.bat run
 ```
 
 4) Access:

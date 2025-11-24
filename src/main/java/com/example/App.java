@@ -15,22 +15,21 @@ public class App {
 	private static final Gson gson = new Gson();
 
     // Set SDK_KEY to your LaunchDarkly SDK key.
-    static String SDK_KEY = "sdk-0d632041-0b5c-4134-9c5c-1d42153c7839";
+    static String SDK_KEY = "YOUR_SDK_KEY";
 
     // Set FEATURE_FLAG_KEY to the feature flag key you want to evaluate.
-    static String FEATURE_FLAG_KEY = "ReleaseAndRemediate";
+    static String FEATURE_FLAG_KEY = "YOUR_FEATURE_FLAG_KEY";
 
-    static String error = "Error";
     static final AtomicBoolean flagOn = new AtomicBoolean(false);
 
 	public static void main(String[] args) {
 		port(8080);
 
 
-        // Set up the evaluation context. This context should appear on your
-        // LaunchDarkly contexts dashboard soon after you run the demo.
         final LDContext context = LDContext.builder("example-user-key")
             .name("john")
+            .set("email", "john.smith@example.com")
+            .set("ip", "192.0.2.1")
             .build();
 
         LDConfig config = new LDConfig.Builder().build();
@@ -38,7 +37,6 @@ public class App {
         final LDClient client = new LDClient(SDK_KEY, config);
 
         if (client.isInitialized()) {
-            // Tracking your memberId lets us know you are connected.
             client.track("69236feea9ec6709b5b48a6b", context);
             error = "SDK successfully initialized!";
           }
@@ -62,11 +60,11 @@ public class App {
 
 
 		get("/message", (req, res) -> {
-            String message = "Hello from the sample Java app!";
+            String message = "";
             if (flagOn.get()) {
-                message = "New Feature Enabled!";
+                message = "Flag is on! (New Feature Enabled!)";
             } else {
-                message = "Hello from the sample Java app!";
+                message = "Flag is off! (old feature)";
             }
 			res.type("application/json");
 
@@ -92,6 +90,7 @@ public class App {
 				  </head>
 				  <body>
 				    <div id="msg">Loading...</div>
+				    <button id="track">Track Event</button>
 				    <script>
 				      async function refresh() {
 				        try {
@@ -102,12 +101,35 @@ public class App {
 				          // ignore errors for demo
 				        }
 				      }
+				      async function track() {
+				        try {
+				          await fetch('/track', { cache: 'no-store' });
+				        } catch (e) {
+				          // ignore
+				        }
+				      }
 				      refresh();
 				      setInterval(refresh, 1000);
+				      document.getElementById('track').addEventListener('click', track);
 				    </script>
 				  </body>
 				</html>
 			""";
+		});
+
+		get("/track", (req, res) -> {
+			// Fire-and-forget tracking event for the current demo context
+			res.type("application/json");
+			// Use the same context and client as initialized above
+			// Note: in production, pass an actual user/context from the request
+			// This demo triggers a single event key as requested
+			try {
+				client.track("79236feea9ec6709b5b48a6b", context);
+			} catch (Exception ignored) {
+			}
+			Map<String, String> response = new HashMap<>();
+			response.put("status", "ok");
+			return gson.toJson(response);
 		});
 	}
 }
